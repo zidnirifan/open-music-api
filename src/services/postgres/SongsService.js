@@ -51,7 +51,8 @@ class SongsService {
   // eslint-disable-next-line object-curly-newline
   async updateSongById(id, { title, year, performer, genre, duration }) {
     const query = {
-      text: 'UPDATE songs SET title = $1, year = $2, performer = $3, genre = $4, duration = $5 WHERE id = $6 RETURNING id',
+      text: `UPDATE songs SET title = $1, year = $2, performer = $3, 
+        genre = $4, duration = $5 WHERE id = $6 RETURNING id`,
       values: [title, year, performer, genre, duration, id],
     };
 
