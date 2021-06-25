@@ -8,6 +8,7 @@ class SongsHandler {
 
     this.postSongHandler = this.postSongHandler.bind(this);
     this.getSongsHandler = this.getSongsHandler.bind(this);
+    this.getSongByIdHandler = this.getSongByIdHandler.bind(this);
   }
 
   async postSongHandler({ payload }, h) {
@@ -55,6 +56,28 @@ class SongsHandler {
       return {
         status: 'success',
         data: { songs },
+      };
+    } catch (error) {
+      const response = h.response({
+        status: 'fail',
+        message: 'Maaf, terjadi kegagalan pada server kami.',
+      });
+
+      response.code(500);
+      console.error(error);
+      return response;
+    }
+  }
+
+  async getSongByIdHandler({ params }, h) {
+    try {
+      const { id } = params;
+
+      const song = await this._service.getSongById(id);
+
+      return {
+        status: 'success',
+        data: { song },
       };
     } catch (error) {
       const response = h.response({
