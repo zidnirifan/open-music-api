@@ -9,6 +9,7 @@ class SongsHandler {
     this.postSongHandler = this.postSongHandler.bind(this);
     this.getSongsHandler = this.getSongsHandler.bind(this);
     this.getSongByIdHandler = this.getSongByIdHandler.bind(this);
+    this.putSongByIdHandler = this.putSongByIdHandler.bind(this);
   }
 
   async postSongHandler({ payload }, h) {
@@ -80,6 +81,40 @@ class SongsHandler {
         data: { song },
       };
     } catch (error) {
+      const response = h.response({
+        status: 'fail',
+        message: 'Maaf, terjadi kegagalan pada server kami.',
+      });
+
+      response.code(500);
+      console.error(error);
+      return response;
+    }
+  }
+
+  async putSongByIdHandler({ payload, params }, h) {
+    try {
+      this._validator.validateSongPayload(payload);
+      const { id } = params;
+
+      await this._service.updateSongById(id, payload);
+
+      const response = h.response({
+        status: 'success',
+        message: 'lagu berhasil diperbarui',
+      });
+      return response;
+    } catch (error) {
+      if (error instanceof ClientError) {
+        const { message, statusCode } = error;
+        const response = h.response({
+          status: 'fail',
+          message,
+        });
+        response.code(statusCode);
+        return response;
+      }
+
       const response = h.response({
         status: 'fail',
         message: 'Maaf, terjadi kegagalan pada server kami.',
