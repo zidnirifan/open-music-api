@@ -81,6 +81,16 @@ class SongsHandler {
         data: { song },
       };
     } catch (error) {
+      if (error instanceof ClientError) {
+        const { message, statusCode } = error;
+        const response = h.response({
+          status: 'fail',
+          message,
+        });
+        response.code(statusCode);
+        return response;
+      }
+
       const response = h.response({
         status: 'fail',
         message: 'Maaf, terjadi kegagalan pada server kami.',
