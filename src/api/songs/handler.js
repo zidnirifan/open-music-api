@@ -1,3 +1,6 @@
+/* eslint-disable no-console */
+const ClientError = require('../../exceptions/ClientError');
+
 class SongsHandler {
   constructor(service, validator) {
     this._service = service;
@@ -23,12 +26,22 @@ class SongsHandler {
       response.code(201);
       return response;
     } catch (error) {
-      console.log(error.message);
+      if (error instanceof ClientError) {
+        const { message, statusCode } = error;
+        const response = h.response({
+          status: 'fail',
+          message,
+        });
+        response.code(statusCode);
+        return response;
+      }
+
       const response = h.response({
         status: 'fail',
-        message: error.message,
+        message: 'Maaf, terjadi kegagalan pada server kami.',
       });
-      response.code(400);
+      response.code(500);
+      console.error(error);
       return response;
     }
   }
