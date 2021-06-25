@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 const handlerCatchError = require('../../utils/handlerCatchError');
 
 class SongsHandler {
