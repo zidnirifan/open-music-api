@@ -10,6 +10,7 @@ class SongsHandler {
     this.getSongsHandler = this.getSongsHandler.bind(this);
     this.getSongByIdHandler = this.getSongByIdHandler.bind(this);
     this.putSongByIdHandler = this.putSongByIdHandler.bind(this);
+    this.deleteSongByIdHandler = this.deleteSongByIdHandler.bind(this);
   }
 
   async postSongHandler({ payload }, h) {
@@ -114,6 +115,37 @@ class SongsHandler {
         message: 'lagu berhasil diperbarui',
       });
       return response;
+    } catch (error) {
+      if (error instanceof ClientError) {
+        const { message, statusCode } = error;
+        const response = h.response({
+          status: 'fail',
+          message,
+        });
+        response.code(statusCode);
+        return response;
+      }
+
+      const response = h.response({
+        status: 'fail',
+        message: 'Maaf, terjadi kegagalan pada server kami.',
+      });
+
+      response.code(500);
+      console.error(error);
+      return response;
+    }
+  }
+
+  async deleteSongByIdHandler({ params }, h) {
+    try {
+      const { id } = params;
+      await this._service.deleteSongById(id);
+
+      return {
+        status: 'success',
+        message: 'lagu berhasil dihapus',
+      };
     } catch (error) {
       if (error instanceof ClientError) {
         const { message, statusCode } = error;
