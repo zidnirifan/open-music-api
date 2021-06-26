@@ -66,7 +66,7 @@ class SongsHandler {
       this._validator.validateSongPayload(payload);
       const { id } = params;
 
-      await this._service.updateSongById(id, payload);
+      await this._service.editSongById(id, payload);
 
       const response = h.response({
         status: 'success',
