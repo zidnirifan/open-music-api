@@ -17,11 +17,11 @@ exports.up = (pgm) => {
       notNull: true,
     },
     performer: {
-      type: 'TEXT',
+      type: 'VARCHAR(70)',
       notNull: true,
     },
     genre: {
-      type: 'TEXT',
+      type: 'VARCHAR(30)',
       notNull: true,
     },
     duration: {
