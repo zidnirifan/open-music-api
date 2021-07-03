@@ -12,11 +12,10 @@ class SongsService {
   // eslint-disable-next-line object-curly-newline
   async addSong({ title, year, performer, genre, duration }) {
     const id = `song-${nanoid(16)}`;
-    const insertedAt = new Date();
 
     const query = {
-      text: 'INSERT INTO songs VALUES($1, $2, $3, $4, $5, $6, $7, $7) RETURNING id',
-      values: [id, title, year, performer, genre, duration, insertedAt],
+      text: 'INSERT INTO songs VALUES($1, $2, $3, $4, $5, $6, NOW(), NOW()) RETURNING id',
+      values: [id, title, year, performer, genre, duration],
     };
 
     const result = await this._pool.query(query);
@@ -49,11 +48,10 @@ class SongsService {
 
   // eslint-disable-next-line object-curly-newline
   async editSongById(id, { title, year, performer, genre, duration }) {
-    const updatedAt = new Date();
     const query = {
       text: `UPDATE songs SET title = $1, year = $2, performer = $3, genre = $4,
-       duration = $5, updated_at = $6 WHERE id = $7 RETURNING id`,
-      values: [title, year, performer, genre, duration, updatedAt, id],
+       duration = $5, updated_at = NOW() WHERE id = $6 RETURNING id`,
+      values: [title, year, performer, genre, duration, id],
     };
 
     const result = await this._pool.query(query);
