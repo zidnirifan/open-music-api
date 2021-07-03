@@ -1,6 +1,6 @@
 const ClientError = require('../exceptions/ClientError');
 
-const handleError = (response, h) => {
+const handleError = ({ response }, h) => {
   if (response instanceof ClientError) {
     const { message, statusCode } = response;
     const responseError = h.response({

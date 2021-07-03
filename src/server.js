@@ -19,7 +19,7 @@ const init = async () => {
   });
 
   // Handling error
-  server.ext('onPreResponse', ({ response }, h) => handleError(response, h));
+  server.ext('onPreResponse', handleError);
 
   await server.register({
     plugin: songsPlugin,
