@@ -17,6 +17,7 @@ const usersPlugin = require('./api/users');
 const AuthenticationsService = require('./services/postgres/AuthenticationsService');
 const authenticationsPlugin = require('./api/authentications');
 const TokenManager = require('./Tokenize/TokenManager');
+const AuthenticationValidator = require('./validator/authentications');
 
 const init = async () => {
   const songsService = new SongsService();
@@ -81,6 +82,7 @@ const init = async () => {
         authenticationsService,
         usersService,
         tokenManager: TokenManager,
+        validator: AuthenticationValidator,
       },
     },
   ]);

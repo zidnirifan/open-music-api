@@ -9,6 +9,7 @@ class AuthenticationsHandler {
   }
 
   async postAuthenticationHandler({ payload }, h) {
+    await this._validator.validatePostAuthenticationPayload(payload);
     const { username, password } = payload;
 
     const id = await this._usersService.verifyUserCredential(username, password);
