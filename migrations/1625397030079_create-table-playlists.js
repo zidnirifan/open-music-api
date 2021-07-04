@@ -7,11 +7,11 @@ exports.up = (pgm) => {
       primaryKey: true,
     },
     name: {
-      type: 'VARCHAR(70)',
+      type: 'VARCHAR(120)',
       notNull: true,
     },
     owner: {
-      type: 'VARCHAR(70)',
+      type: 'CHAR(21)',
       notNull: true,
       references: '"users"',
       onDelete: 'cascade',
