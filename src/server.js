@@ -22,6 +22,7 @@ const AuthenticationValidator = require('./validator/authentications');
 // Playlist
 const PlaylistsService = require('./services/postgres/PlaylistsService');
 const playlistsPlugin = require('./api/playlists');
+const PlaylistsValidator = require('./validator/playlists');
 
 const init = async () => {
   const songsService = new SongsService();
@@ -94,6 +95,7 @@ const init = async () => {
       plugin: playlistsPlugin,
       options: {
         service: playlistsService,
+        validator: PlaylistsValidator,
       },
     },
   ]);

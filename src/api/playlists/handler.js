@@ -1,13 +1,16 @@
 class PlaylistsHandler {
-  constructor(service) {
+  constructor(service, validator) {
     this._service = service;
+    this._validator = validator;
 
     this.postPlaylistHandler = this.postPlaylistHandler.bind(this);
   }
 
-  async postPlaylistHandler(request, h) {
-    const { id: owner } = request.auth.credentials;
-    const { name } = request.payload;
+  async postPlaylistHandler({ payload, auth }, h) {
+    await this._validator.validatePlaylistPayload(payload);
+
+    const { id: owner } = auth.credentials;
+    const { name } = payload;
 
     const playlistId = await this._service.addPlaylist({ owner, name });
 
