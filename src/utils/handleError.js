@@ -18,7 +18,7 @@ const handleError = ({ response }, h) => {
     });
 
     responseError.code(500);
-    console.error(responseError);
+    console.error(response);
     return responseError;
   }
 
