@@ -1,6 +1,7 @@
 class UsersHandler {
-  constructor(service) {
+  constructor(service, validator) {
     this._service = service;
+    this._validator = validator;
 
     this.postUserHandler = this.postUserHandler.bind(this);
   }
@@ -8,6 +9,7 @@ class UsersHandler {
   async postUserHandler(request, h) {
     const { payload } = request;
 
+    await this._validator.validateUserPayload(payload);
     const userId = await this._service.addUser(payload);
 
     const response = h.response({

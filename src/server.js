@@ -6,6 +6,7 @@ const SongsService = require('./services/postgres/SongsService');
 const UsersService = require('./services/postgres/UsersService');
 const handleError = require('./utils/handleError');
 const SongValidator = require('./validator/songs');
+const UsersValidator = require('./validator/users');
 
 const init = async () => {
   const songsService = new SongsService();
@@ -36,6 +37,7 @@ const init = async () => {
       plugin: usersPlugin,
       options: {
         service: usersService,
+        validator: UsersValidator,
       },
     },
   ]);
