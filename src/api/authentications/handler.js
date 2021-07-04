@@ -6,6 +6,7 @@ class AuthenticationsHandler {
     this._validator = validator;
 
     this.postAuthenticationHandler = this.postAuthenticationHandler.bind(this);
+    this.putAuthenticationHandler = this.putAuthenticationHandler.bind(this);
   }
 
   async postAuthenticationHandler({ payload }, h) {
@@ -29,6 +30,24 @@ class AuthenticationsHandler {
     });
     response.code(201);
     return response;
+  }
+
+  async putAuthenticationHandler({ payload }) {
+    const { refreshToken } = payload;
+
+    await this._authenticationsService.verifyRefreshToken(refreshToken);
+
+    const { id } = await this._tokenManager.verifyRefreshToken(refreshToken);
+
+    const accessToken = await this._tokenManager.generateAccessToken({ id });
+
+    return {
+      status: 'success',
+      message: 'Authentication berhasil diperbarui',
+      data: {
+        accessToken,
+      },
+    };
   }
 }
 
