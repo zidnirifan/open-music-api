@@ -11,13 +11,12 @@ const handleError = ({ response }, h) => {
     return responseError;
   }
 
-  if (response instanceof Error) {
-    const responseError = h.response({
+  if (response.output.statusCode === 500) {
+    const responseError = {
       status: 'fail',
       message: 'Maaf, terjadi kegagalan pada server kami.',
-    });
+    };
 
-    responseError.code(500);
     console.error(response);
     return responseError;
   }
