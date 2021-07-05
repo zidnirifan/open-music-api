@@ -30,6 +30,15 @@ class PlaylistsSongsService {
 
     return result.rows;
   }
+
+  async deleteSongFromPlaylist(songId) {
+    const query = {
+      text: 'DELETE FROM playlists_songs WHERE song_id = $1',
+      values: [songId],
+    };
+
+    await this._pool.query(query);
+  }
 }
 
 module.exports = PlaylistsSongsService;
