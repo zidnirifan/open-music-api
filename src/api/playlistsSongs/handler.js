@@ -11,9 +11,9 @@ class PlaylistsSongsHandler {
 
   async postSongToPlaylistHandler({ payload, params, auth }, h) {
     const { playlistId } = params;
-    const { id: owner } = auth.credentials;
+    const { id: userId } = auth.credentials;
 
-    await this._playlistsService.verifyPlaylistOwner(playlistId, owner);
+    await this._playlistsService.verifyPlaylistAccess(playlistId, userId);
 
     await this._validator.validatePlaylistSongPayload(payload);
 
@@ -32,9 +32,9 @@ class PlaylistsSongsHandler {
 
   async getSongsFromPlaylistHandler({ params, auth }) {
     const { playlistId } = params;
-    const { id: owner } = auth.credentials;
+    const { id: userId } = auth.credentials;
 
-    await this._playlistsService.verifyPlaylistOwner(playlistId, owner);
+    await this._playlistsService.verifyPlaylistAccess(playlistId, userId);
 
     const songs = await this._playlistsSongsService.getSongsFromPlaylist(playlistId);
 
@@ -46,10 +46,10 @@ class PlaylistsSongsHandler {
 
   async deleteSongFromPlaylistHandler({ params, payload, auth }) {
     const { playlistId } = params;
-    const { id: owner } = auth.credentials;
+    const { id: userId } = auth.credentials;
 
     await this._validator.validatePlaylistSongPayload(payload);
-    await this._playlistsService.verifyPlaylistOwner(playlistId, owner);
+    await this._playlistsService.verifyPlaylistAccess(playlistId, userId);
 
     const { songId } = payload;
 

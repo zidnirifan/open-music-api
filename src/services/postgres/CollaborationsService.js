@@ -1,5 +1,6 @@
 const { nanoid } = require('nanoid');
 const { Pool } = require('pg');
+const AuthorizationError = require('../../exceptions/AuthorizationError');
 const InvariantError = require('../../exceptions/InvariantError');
 
 class CollaborationsService {
@@ -17,9 +18,20 @@ class CollaborationsService {
 
     const result = await this._pool.query(query);
 
-    if (!result.rowCount) throw new InvariantError('Gaggal menambahkan kolaborasi');
+    if (!result.rowCount) throw new InvariantError('Gagal menambahkan kolaborasi');
 
     return result.rows[0].id;
+  }
+
+  async verifyCollaborator(playlistId, userId) {
+    const query = {
+      text: 'SELECT * FROM collaborations WHERE playlist_id = $1 AND user_id = $2',
+      values: [playlistId, userId],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rowCount) throw new AuthorizationError('Kolaborasi gagal diverifikasi');
   }
 }
 
