@@ -19,16 +19,21 @@ const authenticationsPlugin = require('./api/authentications');
 const TokenManager = require('./Tokenize/TokenManager');
 const AuthenticationValidator = require('./validator/authentications');
 
-// Playlist
+// Playlists
 const PlaylistsService = require('./services/postgres/PlaylistsService');
 const playlistsPlugin = require('./api/playlists');
 const PlaylistsValidator = require('./validator/playlists');
+
+// Playlists Songs
+const PlaylistsSongsService = require('./services/postgres/PlaylistsSongsService');
+const playlistsSongsPlugin = require('./api/playlistsSongs');
 
 const init = async () => {
   const songsService = new SongsService();
   const usersService = new UsersService();
   const authenticationsService = new AuthenticationsService();
   const playlistsService = new PlaylistsService();
+  const playlistsSongsService = new PlaylistsSongsService();
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -96,6 +101,13 @@ const init = async () => {
       options: {
         service: playlistsService,
         validator: PlaylistsValidator,
+      },
+    },
+    {
+      plugin: playlistsSongsPlugin,
+      options: {
+        playlistsSongsService,
+        playlistsService,
       },
     },
   ]);
