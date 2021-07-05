@@ -32,6 +32,7 @@ const PlaylistsSongsValidator = require('./validator/playlistsSongs');
 // Collaborations
 const CollaborationsService = require('./services/postgres/CollaborationsService');
 const collaborationsPlugin = require('./api/collaborations');
+const CollaborationsValidator = require('./validator/collaborations');
 
 const init = async () => {
   const songsService = new SongsService();
@@ -122,6 +123,7 @@ const init = async () => {
       options: {
         collaborationsService,
         playlistsService,
+        validator: CollaborationsValidator,
       },
     },
   ]);

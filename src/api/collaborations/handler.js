@@ -1,7 +1,8 @@
 class CollaborationsHandler {
-  constructor(collaborationsService, playlistsService) {
+  constructor(collaborationsService, playlistsService, validator) {
     this._collaborationsService = collaborationsService;
     this._playlistsService = playlistsService;
+    this._validator = validator;
 
     this.postCollaborationHandler = this.postCollaborationHandler.bind(this);
   }
@@ -11,6 +12,7 @@ class CollaborationsHandler {
     const { playlistId } = payload;
 
     await this._playlistsService.verifyPlaylistOwner(playlistId, owner);
+    await this._validator.validateCollaborationPayload(payload);
 
     const collaborationId = await this._collaborationsService.addCollaboration(payload);
 
