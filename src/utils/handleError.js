@@ -11,7 +11,7 @@ const handleError = ({ response }, h) => {
     return responseError;
   }
 
-  if (response.output.statusCode === 500) {
+  if (response instanceof Error && response.output.statusCode === 500) {
     const responseError = {
       status: 'fail',
       message: 'Maaf, terjadi kegagalan pada server kami.',
