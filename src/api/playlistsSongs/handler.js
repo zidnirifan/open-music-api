@@ -4,6 +4,7 @@ class PlaylistsSongsHandler {
     this._playlistsService = playlistsService;
 
     this.postSongToPlaylistHandler = this.postSongToPlaylistHandler.bind(this);
+    this.getSongsFromPlaylistHandler = this.getSongsFromPlaylistHandler.bind(this);
   }
 
   async postSongToPlaylistHandler({ payload, params, auth }, h) {
@@ -22,6 +23,20 @@ class PlaylistsSongsHandler {
     response.code(201);
 
     return response;
+  }
+
+  async getSongsFromPlaylistHandler({ params, auth }) {
+    const { playlistId } = params;
+    const { id: owner } = auth.credentials;
+
+    await this._playlistsService.verifyPlaylistOwner(playlistId, owner);
+
+    const songs = await this._playlistsSongsService.getSongsFromPlaylist(playlistId);
+
+    return {
+      status: 'success',
+      data: { songs },
+    };
   }
 }
 
