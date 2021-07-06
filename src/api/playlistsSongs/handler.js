@@ -53,7 +53,7 @@ class PlaylistsSongsHandler {
 
     const { songId } = payload;
 
-    await this._playlistsSongsService.deleteSongFromPlaylist(songId);
+    await this._playlistsSongsService.deleteSongFromPlaylist(songId, playlistId);
 
     return {
       status: 'success',
