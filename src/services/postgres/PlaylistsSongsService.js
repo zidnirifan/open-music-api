@@ -22,7 +22,7 @@ class PlaylistsSongsService {
     const query = {
       text: `SELECT songs.id, songs.title, songs.performer
         FROM playlists_songs AS pls
-        LEFT JOIN songs ON songs.id = pls.song_id
+        JOIN songs ON songs.id = pls.song_id
         WHERE pls.playlist_id = $1`,
       values: [playlistId],
     };
