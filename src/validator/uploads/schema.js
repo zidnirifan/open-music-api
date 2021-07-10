@@ -1,6 +1,6 @@
 const Joi = require('joi');
 
-const ImageHeadersSchema = Joi.object({
+const PictureHeadersSchema = Joi.object({
   'content-type': Joi.string()
     .valid(
       'image/apng',
@@ -14,4 +14,4 @@ const ImageHeadersSchema = Joi.object({
     .required(),
 }).unknown();
 
-module.exports = { ImageHeadersSchema };
+module.exports = { PictureHeadersSchema };

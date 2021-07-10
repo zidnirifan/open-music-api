@@ -54,7 +54,7 @@ const init = async () => {
   const playlistsService = new PlaylistsService(collaborationsService);
   const playlistsSongsService = new PlaylistsSongsService();
   const storageService = new StorageService(
-    path.resolve(__dirname, 'api/uploads/file/images'),
+    path.resolve(__dirname, 'api/uploads/file/pictures'),
   );
 
   const server = Hapi.server({
