@@ -16,7 +16,7 @@ class ExportsHandler {
     await this._playlistsService.verifyPlaylistAccess(playlistId, userId);
 
     const { targetEmail } = payload;
-    const message = { userId, targetEmail, playlistId };
+    const message = { targetEmail, playlistId };
 
     await this._producerService.sendMessage(
       'export:playlistSongs',
@@ -25,7 +25,7 @@ class ExportsHandler {
 
     const response = h.response({
       status: 'success',
-      message: 'Permintaan Anda dalam antrean',
+      message: 'Permintaan Anda sedang kami proses',
     });
     response.code(201);
     return response;
