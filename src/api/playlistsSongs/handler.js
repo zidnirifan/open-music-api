@@ -48,8 +48,8 @@ class PlaylistsSongsHandler {
     const { playlistId } = params;
     const { id: userId } = auth.credentials;
 
-    await this._validator.validatePlaylistSongPayload(payload);
     await this._playlistsService.verifyPlaylistAccess(playlistId, userId);
+    await this._validator.validatePlaylistSongPayload(payload);
 
     const { songId } = payload;
 
