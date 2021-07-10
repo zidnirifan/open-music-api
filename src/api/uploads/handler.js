@@ -6,8 +6,8 @@ class UploadsHandler {
     this.postPictureHandler = this.postPictureHandler.bind(this);
   }
 
-  async postPictureHandler(request, h) {
-    const { data } = request.payload;
+  async postPictureHandler({ payload }, h) {
+    const { data } = payload;
     this._validator.validatePictureHeaders(data.hapi.headers);
 
     const filename = await this._service.writeFile(data, data.hapi);
