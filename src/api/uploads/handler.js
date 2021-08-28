@@ -1,9 +1,11 @@
+const autoBind = require('auto-bind');
+
 class UploadsHandler {
   constructor(service, validator) {
     this._service = service;
     this._validator = validator;
 
-    this.postPictureHandler = this.postPictureHandler.bind(this);
+    autoBind(this);
   }
 
   async postPictureHandler({ payload }, h) {
