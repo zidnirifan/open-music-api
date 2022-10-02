@@ -4,11 +4,14 @@ const routes = require('./routes');
 const exportsPlugin = {
   name: 'exports',
   version: '1.0.0',
-  register: async (server, { producerService, playlistsService, validator }) => {
+  register: async (
+    server,
+    { producerService, playlistsService, validator }
+  ) => {
     const exportsHandler = new ExportsHandler(
       producerService,
       playlistsService,
-      validator,
+      validator
     );
     server.route(routes(exportsHandler));
   },

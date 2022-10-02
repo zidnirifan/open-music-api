@@ -1,38 +1,52 @@
+const autoBind = require('auto-bind');
+
 class CollaborationsHandler {
-  constructor({ collaborationsService, playlistsService, validator }) {
+  constructor({
+    collaborationsService,
+    playlistsService,
+    usersService,
+    cacheService,
+    validator,
+  }) {
     this._collaborationsService = collaborationsService;
     this._playlistsService = playlistsService;
+    this._usersService = usersService;
+    this._cacheService = cacheService;
     this._validator = validator;
 
-    this.postCollaborationHandler = this.postCollaborationHandler.bind(this);
-    this.deleteCollaborationHandler = this.deleteCollaborationHandler.bind(this);
+    autoBind(this);
   }
 
   async postCollaborationHandler({ payload, auth }, h) {
     const { id: owner } = auth.credentials;
-    const { playlistId } = payload;
+    const { playlistId, userId } = payload;
 
+    await this._usersService.isUserExist(userId);
     await this._playlistsService.verifyPlaylistOwner(playlistId, owner);
     await this._validator.validateCollaborationPayload(payload);
 
-    const collaborationId = await this._collaborationsService.addCollaboration(payload);
+    const collaborationId = await this._collaborationsService.addCollaboration(
+      payload
+    );
+    await this._cacheService.delete(`playlists:${userId}`);
 
-    const response = h.response({
-      status: 'success',
-      message: 'Kolaborasi berhasil ditambahkan',
-      data: { collaborationId },
-    });
-    response.code(201);
-    return response;
+    return h
+      .response({
+        status: 'success',
+        message: 'Kolaborasi berhasil ditambahkan',
+        data: { collaborationId },
+      })
+      .code(201);
   }
 
   async deleteCollaborationHandler({ payload, auth }) {
     const { id: owner } = auth.credentials;
-    const { playlistId } = payload;
+    const { playlistId, userId } = payload;
 
     await this._playlistsService.verifyPlaylistOwner(playlistId, owner);
     await this._validator.validateCollaborationPayload(payload);
     await this._collaborationsService.deleteCollaboration(payload);
+    await this._cacheService.delete(`playlists:${userId}`);
 
     return {
       status: 'success',

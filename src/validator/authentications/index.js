@@ -9,7 +9,8 @@ const AuthenticationValidator = {
   validatePostAuthenticationPayload: (payload) => {
     const validationResult = AuthenticationPayloadSchema.validate(payload);
 
-    if (validationResult.error) throw new InvariantError(validationResult.error.message);
+    if (validationResult.error)
+      throw new InvariantError(validationResult.error.message);
   },
   validatePutAuthenticationPayload: (payload) => {
     const validationResult = PutAuthenticationPayloadSchema.validate(payload);
@@ -18,7 +19,8 @@ const AuthenticationValidator = {
     }
   },
   validateDeleteAuthenticationPayload: (payload) => {
-    const validationResult = DeleteAuthenticationPayloadSchema.validate(payload);
+    const validationResult =
+      DeleteAuthenticationPayloadSchema.validate(payload);
     if (validationResult.error) {
       throw new InvariantError(validationResult.error.message);
     }

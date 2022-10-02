@@ -5,10 +5,9 @@ const InvariantError = require('../../exceptions/InvariantError');
 const NotFoundError = require('../../exceptions/NotFoundError');
 
 class PlaylistsService {
-  constructor(collaborationsService, cacheService) {
+  constructor(collaborationsService) {
     this._pool = new Pool();
     this._collaborationsService = collaborationsService;
-    this._cacheService = cacheService;
   }
 
   async addPlaylist(name, owner) {
@@ -19,51 +18,52 @@ class PlaylistsService {
       values: [id, name, owner],
     };
 
-    const result = await this._pool.query(query);
+    const { rows } = await this._pool.query(query);
 
-    if (!result.rowCount) throw new InvariantError('Playlist gagal ditambahkan');
-
-    await this._cacheService.delete(`playlist:${owner}`);
-
-    return result.rows[0].id;
+    if (!rows.length) throw new InvariantError('Playlist gagal ditambahkan');
+    return rows[0].id;
   }
 
   async getPlaylists(owner) {
-    try {
-      const result = await this._cacheService.get(`playlist:${owner}`);
-      return JSON.parse(result);
-    } catch {
-      const query = {
-        text: `SELECT playlists.id, playlists.name, users.username
+    const query = {
+      text: `SELECT playlists.id, playlists.name, users.username
         FROM playlists
         JOIN users ON users.id = playlists.owner
         LEFT JOIN collaborations ON collaborations.user_id = $1
         WHERE playlists.owner = $1 OR playlists.id = collaborations.playlist_id`,
-        values: [owner],
-      };
+      values: [owner],
+    };
 
-      const result = await this._pool.query(query);
+    const { rows } = await this._pool.query(query);
+    return rows;
+  }
 
-      await this._cacheService.set(`playlist:${owner}`, JSON.stringify(result.rows));
+  async getPlaylistById(id) {
+    const query = {
+      text: `SELECT playlists.id, playlists.name, users.username
+        FROM playlists
+        JOIN users ON users.id = playlists.owner
+        WHERE playlists.id = $1`,
+      values: [id],
+    };
 
-      return result.rows;
-    }
+    const { rows } = await this._pool.query(query);
+    return rows[0];
   }
 
   async deletePlaylist(id) {
     const query = {
-      text: 'DELETE FROM playlists WHERE id = $1 RETURNING owner',
+      text: 'DELETE FROM playlists WHERE id = $1 RETURNING id',
       values: [id],
     };
 
-    const result = await this._pool.query(query);
+    const { rowCount } = await this._pool.query(query);
 
-    if (!result.rowCount) {
-      throw new NotFoundError('Gagal menghapus playlist, playlist tidak ditemukan');
+    if (!rowCount) {
+      throw new NotFoundError(
+        'Gagal menghapus playlist, playlist tidak ditemukan'
+      );
     }
-
-    const { owner } = result.rows[0];
-    await this._cacheService.delete(`playlist:${owner}`);
   }
 
   async verifyPlaylistOwner(id, owner) {
@@ -72,11 +72,11 @@ class PlaylistsService {
       values: [id],
     };
 
-    const result = await this._pool.query(query);
+    const { rows } = await this._pool.query(query);
 
-    if (!result.rowCount) throw new NotFoundError('Playlist tidak ditemukan');
+    if (!rows.length) throw new NotFoundError('Playlist tidak ditemukan');
 
-    const playlistOwner = result.rows[0].owner;
+    const playlistOwner = rows[0].owner;
 
     if (playlistOwner !== owner) {
       throw new AuthorizationError('Anda tidak berhak mengakses playlist ini');
@@ -90,7 +90,10 @@ class PlaylistsService {
       if (error instanceof NotFoundError) throw error;
 
       try {
-        await this._collaborationsService.verifyCollaborator(playlistId, userId);
+        await this._collaborationsService.verifyCollaborator(
+          playlistId,
+          userId
+        );
       } catch {
         throw error;
       }

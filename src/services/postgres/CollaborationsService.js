@@ -4,9 +4,8 @@ const AuthorizationError = require('../../exceptions/AuthorizationError');
 const InvariantError = require('../../exceptions/InvariantError');
 
 class CollaborationsService {
-  constructor(cacheService) {
+  constructor() {
     this._pool = new Pool();
-    this._cacheService = cacheService;
   }
 
   async addCollaboration({ playlistId, userId }) {
@@ -17,13 +16,11 @@ class CollaborationsService {
       values: [id, playlistId, userId],
     };
 
-    const result = await this._pool.query(query);
+    const { rows } = await this._pool.query(query);
 
-    if (!result.rowCount) throw new InvariantError('Gagal menambahkan kolaborasi');
+    if (!rows.length) throw new InvariantError('Gagal menambahkan kolaborasi');
 
-    await this._cacheService.delete(`playlist:${userId}`);
-
-    return result.rows[0].id;
+    return rows[0].id;
   }
 
   async deleteCollaboration({ playlistId, userId }) {
@@ -33,11 +30,9 @@ class CollaborationsService {
       values: [playlistId, userId],
     };
 
-    const result = await this._pool.query(query);
+    const { rowCount } = await this._pool.query(query);
 
-    if (!result.rowCount) throw new InvariantError('Gagal menghapus kolaborasi');
-
-    await this._cacheService.delete(`playlist:${userId}`);
+    if (!rowCount) throw new InvariantError('Gagal menghapus kolaborasi');
   }
 
   async verifyCollaborator(playlistId, userId) {
@@ -46,9 +41,10 @@ class CollaborationsService {
       values: [playlistId, userId],
     };
 
-    const result = await this._pool.query(query);
+    const { rowCount } = await this._pool.query(query);
 
-    if (!result.rowCount) throw new AuthorizationError('Kolaborasi gagal diverifikasi');
+    if (!rowCount)
+      throw new AuthorizationError('Kolaborasi gagal diverifikasi');
   }
 }
 

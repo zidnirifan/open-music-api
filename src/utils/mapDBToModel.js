@@ -1,10 +1,11 @@
-const mapDBToModel = (data) => {
-  const { inserted_at: insertedAt, updated_at: updatedAt, ...rest } = data;
-  return {
-    ...rest,
-    insertedAt,
-    updatedAt,
-  };
-};
+const mapSongDBToModel = ({ album_id, ...rest }) => ({
+  ...rest,
+  albumId: album_id,
+});
 
-module.exports = mapDBToModel;
+const mapAlbumDBToModel = ({ cover, ...rest }) => ({
+  ...rest,
+  coverUrl: cover,
+});
+
+module.exports = { mapSongDBToModel, mapAlbumDBToModel };

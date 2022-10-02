@@ -2,6 +2,7 @@ const { nanoid } = require('nanoid');
 const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
 const InvariantError = require('../../exceptions/InvariantError');
+const NotFoundError = require('../../exceptions/NotFoundError');
 const AuthenticationError = require('../../exceptions/AuthenticationError');
 
 class UsersService {
@@ -20,11 +21,11 @@ class UsersService {
       values: [id, username, hashedPassword, fullname],
     };
 
-    const result = await this._pool.query(query);
+    const { rows } = await this._pool.query(query);
 
-    if (!result.rowCount) throw new InvariantError('User gagal ditambahkan');
+    if (!rows.length) throw new InvariantError('User gagal ditambahkan');
 
-    return result.rows[0].id;
+    return rows[0].id;
   }
 
   async verifyUsername(username) {
@@ -33,9 +34,9 @@ class UsersService {
       values: [username],
     };
 
-    const result = await this._pool.query(query);
+    const { rowCount } = await this._pool.query(query);
 
-    if (result.rowCount) throw new InvariantError('Username sudah digunakan');
+    if (rowCount) throw new InvariantError('Username sudah digunakan');
   }
 
   async verifyUserCredential(username, password) {
@@ -44,17 +45,28 @@ class UsersService {
       values: [username],
     };
 
-    const result = await this._pool.query(query);
+    const { rows } = await this._pool.query(query);
 
-    if (!result.rowCount) throw new AuthenticationError('Kredensial tidak valid');
+    if (!rows.length) throw new AuthenticationError('Kredensial tidak valid');
 
-    const { id, password: hashedPassword } = result.rows[0];
+    const { id, password: hashedPassword } = rows[0];
 
     const match = await bcrypt.compare(password, hashedPassword);
 
     if (!match) throw new AuthenticationError('Kredensial tidak valid');
 
     return id;
+  }
+
+  async isUserExist(id) {
+    const query = {
+      text: 'SELECT id FROM users WHERE id = $1',
+      values: [id],
+    };
+
+    const { rowCount } = await this._pool.query(query);
+
+    if (!rowCount) throw new NotFoundError('User tidak ditemukan');
   }
 }
 

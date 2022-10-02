@@ -1,11 +1,12 @@
+const autoBind = require('auto-bind');
+
 class PlaylistsHandler {
-  constructor(service, validator) {
-    this._service = service;
+  constructor({ playlistsService, cacheService, validator }) {
+    this._playlistsService = playlistsService;
+    this._cacheService = cacheService;
     this._validator = validator;
 
-    this.postPlaylistHandler = this.postPlaylistHandler.bind(this);
-    this.getPlaylistsHandler = this.getPlaylistsHandler.bind(this);
-    this.deletePlaylistHandler = this.deletePlaylistHandler.bind(this);
+    autoBind(this);
   }
 
   async postPlaylistHandler({ payload, auth }, h) {
@@ -14,33 +15,52 @@ class PlaylistsHandler {
     const { id: owner } = auth.credentials;
     const { name } = payload;
 
-    const playlistId = await this._service.addPlaylist(name, owner);
+    const playlistId = await this._playlistsService.addPlaylist(name, owner);
+    await this._cacheService.delete(`playlists:${owner}`);
 
-    const response = h.response({
-      status: 'success',
-      message: 'Playlist berhasil ditambahkan',
-      data: { playlistId },
-    });
-    response.code(201);
-    return response;
+    return h
+      .response({
+        status: 'success',
+        message: 'Playlist berhasil ditambahkan',
+        data: { playlistId },
+      })
+      .code(201);
   }
 
-  async getPlaylistsHandler({ auth }) {
-    const { id } = auth.credentials;
-    const playlists = await this._service.getPlaylists(id);
+  async getPlaylistsHandler({ auth }, h) {
+    const { id: owner } = auth.credentials;
+    try {
+      const playlists = await this._cacheService.get(`playlists:${owner}`);
 
-    return {
-      status: 'success',
-      data: { playlists },
-    };
+      return h
+        .response({
+          status: 'success',
+          data: { playlists: JSON.parse(playlists) },
+        })
+        .header('X-Data-Source', 'cache');
+    } catch {
+      const playlists = await this._playlistsService.getPlaylists(owner);
+
+      await this._cacheService.set(
+        `playlists:${owner}`,
+        JSON.stringify(playlists)
+      );
+
+      return {
+        status: 'success',
+        data: { playlists },
+      };
+    }
   }
 
   async deletePlaylistHandler({ params, auth }) {
     const { id } = params;
     const { id: owner } = auth.credentials;
 
-    await this._service.verifyPlaylistOwner(id, owner);
-    await this._service.deletePlaylist(id);
+    await this._playlistsService.verifyPlaylistOwner(id, owner);
+    await this._playlistsService.deletePlaylist(id);
+    await this._cacheService.delete(`playlists:${owner}`);
+    await this._cacheService.delete(`playlist_songs:${id}`);
 
     return {
       status: 'success',

@@ -3,7 +3,14 @@ const Hapi = require('@hapi/hapi');
 const Jwt = require('@hapi/jwt');
 const Inert = require('@hapi/inert');
 const path = require('path');
-const handleError = require('./utils/handleError');
+
+// Error Handler
+const errorsPlugin = require('./api/errors');
+
+// Albums
+const albumsPlugin = require('./api/albums');
+const AlbumsService = require('./services/postgres/AlbumsService');
+const AlbumValidator = require('./validator/albums');
 
 // Songs
 const SongsService = require('./services/postgres/SongsService');
@@ -27,39 +34,43 @@ const playlistsPlugin = require('./api/playlists');
 const PlaylistsValidator = require('./validator/playlists');
 
 // Playlists Songs
-const PlaylistsSongsService = require('./services/postgres/PlaylistsSongsService');
-const playlistsSongsPlugin = require('./api/playlistsSongs');
-const PlaylistsSongsValidator = require('./validator/playlistsSongs');
+const PlaylistSongsService = require('./services/postgres/PlaylistSongsService');
+const playlistSongsPlugin = require('./api/playlistSongs');
+const PlaylistSongsValidator = require('./validator/playlistSongs');
 
 // Collaborations
 const CollaborationsService = require('./services/postgres/CollaborationsService');
 const collaborationsPlugin = require('./api/collaborations');
 const CollaborationsValidator = require('./validator/collaborations');
 
+// Playlist Activities
+const PlaylistActivitiesService = require('./services/postgres/PlaylistActivitiesService');
+const playlistActivitiesPlugin = require('./api/playlistActivities');
+
 // Exports
 const ProducerService = require('./services/rabbitmq/ProducerService');
 const exportsPlugin = require('./api/exports');
 const ExportsValidator = require('./validator/exports');
 
-// Uploads
+// Upload
 const StorageService = require('./services/storage/StorageService');
-const UploadsValidator = require('./validator/uploads');
-const uplodsPlugin = require('./api/uploads');
 
 // Cache
 const CacheService = require('./services/redis/CacheService');
 
 const init = async () => {
-  const cacheService = new CacheService();
+  const albumsService = new AlbumsService();
   const songsService = new SongsService();
   const usersService = new UsersService();
   const authenticationsService = new AuthenticationsService();
-  const collaborationsService = new CollaborationsService(cacheService);
-  const playlistsService = new PlaylistsService(collaborationsService, cacheService);
-  const playlistsSongsService = new PlaylistsSongsService(cacheService);
+  const collaborationsService = new CollaborationsService();
+  const playlistsService = new PlaylistsService(collaborationsService);
+  const playlistSongsService = new PlaylistSongsService();
+  const playlistActivitiesService = new PlaylistActivitiesService();
   const storageService = new StorageService(
-    path.resolve(__dirname, '../public/pictures'),
+    path.resolve(__dirname, '../public/covers')
   );
+  const cacheService = new CacheService();
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -98,10 +109,20 @@ const init = async () => {
     }),
   });
 
-  // Handling error
-  server.ext('onPreResponse', handleError);
-
   await server.register([
+    {
+      plugin: errorsPlugin,
+    },
+    {
+      plugin: albumsPlugin,
+      options: {
+        albumsService,
+        songsService,
+        storageService,
+        cacheService,
+        validator: AlbumValidator,
+      },
+    },
     {
       plugin: songsPlugin,
       options: {
@@ -128,16 +149,20 @@ const init = async () => {
     {
       plugin: playlistsPlugin,
       options: {
-        service: playlistsService,
+        playlistsService,
+        cacheService,
         validator: PlaylistsValidator,
       },
     },
     {
-      plugin: playlistsSongsPlugin,
+      plugin: playlistSongsPlugin,
       options: {
-        playlistsSongsService,
+        playlistSongsService,
         playlistsService,
-        validator: PlaylistsSongsValidator,
+        songsService,
+        playlistActivitiesService,
+        cacheService,
+        validator: PlaylistSongsValidator,
       },
     },
     {
@@ -145,7 +170,16 @@ const init = async () => {
       options: {
         collaborationsService,
         playlistsService,
+        usersService,
+        cacheService,
         validator: CollaborationsValidator,
+      },
+    },
+    {
+      plugin: playlistActivitiesPlugin,
+      options: {
+        playlistActivitiesService,
+        playlistsService,
       },
     },
     {
@@ -154,13 +188,6 @@ const init = async () => {
         producerService: ProducerService,
         playlistsService,
         validator: ExportsValidator,
-      },
-    },
-    {
-      plugin: uplodsPlugin,
-      options: {
-        service: storageService,
-        validator: UploadsValidator,
       },
     },
   ]);
